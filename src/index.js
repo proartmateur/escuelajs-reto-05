@@ -2,7 +2,7 @@ const $app = document.getElementById('app');
 const $observe = document.getElementById('observe');
 //const API = 'https://rickandmortyapi.com/api/character/';
 const API = 'https://us-central1-escuelajs-api.cloudfunctions.net/characters';
-
+var obj_storage = {}
 
 
 function renderItem(output){
@@ -107,6 +107,9 @@ const loadData = () => {
         `
         renderItem(output)
         localStorage.setItem("not_more_rendered",true)
+        obj_storage.instanciaIntersectionObserver.unobserve($observe)
+        let io_del = delete obj_storage.instanciaIntersectionObserver
+        console.log("IntersectionObserver object Deleted!: ", io_del)
       }
     }else{
       getData(next_fetch);
@@ -118,7 +121,7 @@ const loadData = () => {
 
 }
 
-const intersectionObserver = new IntersectionObserver(entries => {
+/* const intersectionObserver = new IntersectionObserver(entries => {
   if (entries[0].isIntersecting) {
     console.log("Es visible")
     loadData();
@@ -127,10 +130,22 @@ const intersectionObserver = new IntersectionObserver(entries => {
   } 
 }, {
   rootMargin: '0px 0px 100% 0px',
-});
+}); */
 
 
 const onLoad = function (){
+
+  obj_storage.instanciaIntersectionObserver = new IntersectionObserver(entries => {
+    if (entries[0].isIntersecting) {
+      console.log("Es visible")
+      loadData();
+    } else {
+      console.log("No se ves")
+    } 
+  }, {
+    rootMargin: '0px 0px 100% 0px',
+  });
+
   console.log("Esta es la primera carga...")
   if(existeLocalKey("first_page_chars")){
     const characters = JSON.parse(localStorage.getItem("first_page_chars"))
@@ -152,7 +167,7 @@ const onLoad = function (){
 
   }
 
-  intersectionObserver.observe($observe);
+  obj_storage.instanciaIntersectionObserver.observe($observe);
   console.log("Observer Listening")
 }
 
