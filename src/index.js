@@ -12,17 +12,6 @@ function renderItem(output) {
   $app.appendChild(newItem)
 }
 
-function existeNextFetch() {
-  let hay_next_fetch = Object.keys(localStorage).find(key => {
-    return key === "next_fetch"
-  })
-
-  if (hay_next_fetch === "next_fetch") {
-    return true
-  } else {
-    return false
-  }
-}
 
 function existeLocalKey(local_key) {
   let hay_next_fetch = Object.keys(localStorage).find(key => {
@@ -47,7 +36,7 @@ const getData = async api => {
     let next_page = response.info.next
 
 
-    if (existeNextFetch()) {
+    if (existeLocalKey("next_fetch")) {
     
       let current_page = localStorage.getItem("next_fetch")
       if (current_page != next_page) {
@@ -88,7 +77,7 @@ const getData = async api => {
 
 const loadData = () => {
 
-  if (existeNextFetch()) {
+  if (existeLocalKey("next_fetch")) {
     
     let next_fetch = localStorage.getItem("next_fetch")
     if (next_fetch === "" || next_fetch === undefined) {
