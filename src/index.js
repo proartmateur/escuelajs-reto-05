@@ -24,6 +24,19 @@ function existeNextFetch(){
   }
 }
 
+function existeLocalKey(local_key){
+  let hay_next_fetch = Object.keys(localStorage).find( key => {
+    return key === local_key
+  })
+
+  if (hay_next_fetch === local_key) {
+      return true
+  } else {
+    return false
+  }
+}
+
+
 const getData = async api => {
 
   let response = await fetch(api)
@@ -31,7 +44,8 @@ const getData = async api => {
   console.log("Respuesta:", response)
   if(response.status === 200){
       response = await response.json()
-      let next_page = response.info.next       
+      let next_page = response.info.next 
+           
         
       if (existeNextFetch()) {
         console.log("Existe Next Fetch")
@@ -47,6 +61,16 @@ const getData = async api => {
       
 
       const characters = response.results;
+      if(existeLocalKey("first_page_chars")){
+        console.log("Hay cosas en local storage")
+      }else{
+        console.log("Es la primera corrida")
+        console.log("Guardando characters...")
+
+        localStorage.setItem("first_page_chars",JSON.stringify(characters))
+      }
+
+      console.log("Total Characters: ",characters.length)
       let output = characters.map(character => {
         return `
       <article class="Card">
@@ -76,10 +100,14 @@ const loadData = () => {
     console.log("Existe Next Fetch, Loading new data....")
     let next_fetch = localStorage.getItem("next_fetch")
     if(next_fetch === "" || next_fetch === undefined){
-      let output = `
-        <div class="no_more_pages"> No hay más personajes por cargar </div>
-      `
-      renderItem(output)
+      if(!existeLocalKey("not_more_rendered")){
+
+        let output = `
+          <div class="no_more_pages"> No hay más personajes por cargar </div>
+        `
+        renderItem(output)
+        localStorage.setItem("not_more_rendered",true)
+      }
     }else{
       getData(next_fetch);
     }
@@ -101,4 +129,31 @@ const intersectionObserver = new IntersectionObserver(entries => {
   rootMargin: '0px 0px 100% 0px',
 });
 
-intersectionObserver.observe($observe);
+
+const onLoad = function (){
+  console.log("Esta es la primera carga...")
+  if(existeLocalKey("first_page_chars")){
+    const characters = JSON.parse(localStorage.getItem("first_page_chars"))
+
+
+    console.log("Rendering 1st Characters: ",characters.length)
+    let output = characters.map(character => {
+      return `
+    <article class="Card">
+      <img src="${character.image}" />
+      <h2>${character.name}<span>${character.species}</span></h2>
+    </article>
+  `
+    }).join('');
+    renderItem(output)
+    localStorage.removeItem("first_page_chars")
+    localStorage.removeItem("next_fetch")
+    localStorage.removeItem("not_more_rendered")
+
+  }
+
+  intersectionObserver.observe($observe);
+  console.log("Observer Listening")
+}
+
+onLoad()
