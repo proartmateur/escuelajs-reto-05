@@ -41,36 +41,28 @@ const getData = async api => {
 
   let response = await fetch(api)
 
-  console.log("Respuesta:", response)
+  
   if (response.status === 200) {
     response = await response.json()
     let next_page = response.info.next
 
 
     if (existeNextFetch()) {
-      console.log("Existe Next Fetch")
+    
       let current_page = localStorage.getItem("next_fetch")
       if (current_page != next_page) {
         localStorage.setItem("next_fetch", next_page)
-      } else {
-        console.log("Son iguales las páginas")
-      }
+      } 
     } else {
       localStorage.setItem("next_fetch", next_page)
     }
 
 
     const characters = response.results
-    if (existeLocalKey("first_page_chars")) {
-      console.log("Hay cosas en local storage")
-    } else {
-      console.log("Es la primera corrida")
-      console.log("Guardando characters...")
+    if (!existeLocalKey("first_page_chars")) {
+       localStorage.setItem("first_page_chars", JSON.stringify(characters))
+    } 
 
-      localStorage.setItem("first_page_chars", JSON.stringify(characters))
-    }
-
-    console.log("Total Characters: ", characters.length)
     let output = characters.map(character => {
       return `
       <article class="Card">
@@ -97,7 +89,7 @@ const getData = async api => {
 const loadData = () => {
 
   if (existeNextFetch()) {
-    console.log("Existe Next Fetch, Loading new data....")
+    
     let next_fetch = localStorage.getItem("next_fetch")
     if (next_fetch === "" || next_fetch === undefined) {
       if (!existeLocalKey("not_more_rendered")) {
@@ -135,12 +127,12 @@ const onLoad = function () {
       rootMargin: '0px 0px 100% 0px',
     })
 
-  console.log("Esta es la primera carga...")
+  
   if (existeLocalKey("first_page_chars")) {
     const characters = JSON.parse(localStorage.getItem("first_page_chars"))
 
 
-    console.log("Rendering 1st Characters: ", characters.length)
+    
     let output = characters.map(character => {
       return `
     <article class="Card">
