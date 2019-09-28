@@ -1,7 +1,7 @@
 const $app = document.getElementById('app');
 const $observe = document.getElementById('observe');
-const API = 'https://rickandmortyapi.com/api/character/';
-//const API = 'https://us-central1-escuelajs-api.cloudfunctions.net/characters';
+//const API = 'https://rickandmortyapi.com/api/character/';
+const API = 'https://us-central1-escuelajs-api.cloudfunctions.net/characters';
 
 
 
@@ -26,61 +26,48 @@ function existeNextFetch(){
 
 const getData = async api => {
 
-  //let response = await fetch(api)
+  let response = await fetch(api)
 
-  
-  fetch(api)
-    .then(response => {
-      console.log("Respuesta:", response)
-      if(response.status === 200){
-        return response.json()
-      }else{
-        return { 
-          "load_error": "No se pudo obtener la lista de personajes, intenta más tarde"
-         }
-      }      
-    })
-    .then(response => {
-      let hay_load_error = Object.keys(response).find( key => {
-        return key === "load_error"
-      })
-      console.log(hay_load_error)
-      if(hay_load_error === undefined){
+  console.log("Respuesta:", response)
+  if(response.status === 200){
+      response = await response.json()
+      let next_page = response.info.next       
         
-        let next_page = response.info.next       
-        
-        if (existeNextFetch()) {
-          console.log("Existe Next Fetch")
-          let current_page = localStorage.getItem("next_fetch")
-          if (current_page != next_page) {
-            localStorage.setItem("next_fetch", next_page)
-          } else {
-            console.log("Son iguales las páginas")
-          }
-        } else {
+      if (existeNextFetch()) {
+        console.log("Existe Next Fetch")
+        let current_page = localStorage.getItem("next_fetch")
+        if (current_page != next_page) {
           localStorage.setItem("next_fetch", next_page)
+        } else {
+          console.log("Son iguales las páginas")
         }
-        
-
-        const characters = response.results;
-        let output = characters.map(character => {
-          return `
-        <article class="Card">
-          <img src="${character.image}" />
-          <h2>${character.name}<span>${character.species}</span></h2>
-        </article>
-      `
-        }).join('');
-        renderItem(output)
-
-      }else{
-        let output = `
-          <div class="load_error"> ${response.load_error} </div>
-        `
-        renderItem(output)
+      } else {
+        localStorage.setItem("next_fetch", next_page)
       }
-    })
-    .catch(error => console.log(error));
+      
+
+      const characters = response.results;
+      let output = characters.map(character => {
+        return `
+      <article class="Card">
+        <img src="${character.image}" />
+        <h2>${character.name}<span>${character.species}</span></h2>
+      </article>
+    `
+      }).join('');
+      renderItem(output)
+
+  }else{
+    response = { 
+      "load_error": "No se pudo obtener la lista de personajes, intenta más tarde"
+      }
+
+    let output = `
+      <div class="load_error"> ${response.load_error} </div>
+    `
+    renderItem(output)
+  }  
+  
 }
 
 const loadData = () => {
